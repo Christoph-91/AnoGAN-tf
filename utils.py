@@ -2,17 +2,23 @@
 Some codes from https://github.com/Newmu/dcgan_code
 """
 from __future__ import division
+from __future__ import print_function #import the current print_function
 import math
 import json
 import random
 import pprint
-import scipy.misc
+import scipy.misc #out of date, use imageio instead
+import imageio
 import numpy as np
 from time import gmtime, strftime
 from six.moves import xrange
 
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
+#it is necessary to use tensorflow.compat.v1 to ensure
+#the compatibility of the code, which is written for tensorflow 1.x
+#with the current version tensorflow 2.x
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import tf_slim as slim
 
 pp = pprint.PrettyPrinter()
 
@@ -23,7 +29,7 @@ def initialize_uninitialized(sess):
   is_not_initialized = sess.run([tf.is_variable_initialized(var) for var in global_vars])
   not_initialized_vars = [v for (v,f) in zip(global_vars, is_not_initialized) if not f]
 
-  print [str(i.name) for i in not_initialized_vars]
+  print([str(i.name) for i in not_initialized_vars])
 
   if len(not_initialized_vars):
     sess.run(tf.variables_initializer(not_initialized_vars))
@@ -45,9 +51,9 @@ def save_images(images, size, image_path):
 
 def imread(path, grayscale = False):
   if (grayscale):
-    return scipy.misc.imread(path, flatten = True).astype(np.float)
+    return imageio.imread(path, as_gray = True).astype(np.float)
   else:
-    return scipy.misc.imread(path).astype(np.float)
+    return imageio.imread(path).astype(np.float)
 
 def merge_images(images, size):
   return inverse_transform(images)
@@ -75,7 +81,7 @@ def merge(images, size):
 
 def imsave(images, size, path):
   image = np.squeeze(merge(images, size))
-  return scipy.misc.imsave(path, image)
+  return imageio.imwrite(path, image)
 
 def center_crop(x, crop_h, crop_w,
                 resize_h=64, resize_w=64):

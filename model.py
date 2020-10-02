@@ -1,9 +1,15 @@
 from __future__ import division
+from __future__ import print_function #import the current print_function
 import os
 import time
 import math
 from glob import glob
-import tensorflow as tf
+
+#it is necessary to use tensorflow.compat.v1 to ensure
+#the compatibility of the code, which is written for tensorflow 1.x
+#with the current version tensorflow 2.x
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 from six.moves import xrange
 
@@ -428,16 +434,16 @@ class DCGAN(object):
         yb = tf.reshape(y, [self.batch_size, 1, 1, self.y_dim])
         z = concat([z, y], 1)
 
-        h0 = tf.nn.relu(self.g_bn0(linear(z, self.gfc_dim, 'g_h0_lin'), train=False))
+        h0 = tf.nn.relu(self.g_bn0(linear(z, self.gfc_dim, 'g_h0_lin'), training=False))
         h0 = concat([h0, y], 1)
 
         h1 = tf.nn.relu(self.g_bn1(
-            linear(h0, self.gf_dim*2*s_h4*s_w4, 'g_h1_lin'), train=False))
+            linear(h0, self.gf_dim*2*s_h4*s_w4, 'g_h1_lin'), training=False))
         h1 = tf.reshape(h1, [self.batch_size, s_h4, s_w4, self.gf_dim * 2])
         h1 = conv_cond_concat(h1, yb)
 
         h2 = tf.nn.relu(self.g_bn2(
-            deconv2d(h1, [self.batch_size, s_h2, s_w2, self.gf_dim * 2], name='g_h2'), train=False))
+            deconv2d(h1, [self.batch_size, s_h2, s_w2, self.gf_dim * 2], name='g_h2'), training=False))
         h2 = conv_cond_concat(h2, yb)
 
         return tf.nn.sigmoid(deconv2d(h2, [self.batch_size, s_h, s_w, self.c_dim], name='g_h3'))
@@ -452,7 +458,7 @@ class DCGAN(object):
       batch_images = np.array(batch).astype(np.float32)
     #print np.shape(batch_images)
     self.test_data = batch_images
-    print "[*] test data for anomaly detection is loaded"
+    print("[*] test data for anomaly detection is loaded")
 
 
   def anomaly_detector(self, ano_para=0.1, dis_loss='feature'):
@@ -496,11 +502,11 @@ class DCGAN(object):
 
       t_vars = tf.trainable_variables()
       self.z_vars = [var for var in t_vars if 'ano_z' in var.name]
-      print test_inputs, self.ano_G, dis_f_z, dis_f_input
+      print(test_inputs, self.ano_G, dis_f_z, dis_f_input)
 
   def train_anomaly_detector(self, config, test_data, test_data_name):
-    print "Filename: ", test_data_name, "Anomaly is detecting"
-    print np.shape(test_data)
+    print("Filename: ", test_data_name, "Anomaly is detecting")
+    print(np.shape(test_data))
     #self.sess.run(self.ano_z.initializer)
     z_optim = tf.train.AdamOptimizer(config.test_learning_rate, beta1=config.beta1) \
           .minimize(self.anomaly_score, var_list = self.z_vars)
@@ -510,7 +516,7 @@ class DCGAN(object):
       if not self.y_dim:
         feed_dict = {self.test_inputs: test_data} 
       else:
-        print "Not yet prepared anomaly detection model of MNIST dataset"
+        print("Not yet prepared anomaly detection model of MNIST dataset")
         feed_dict = {}
       _, ano_score, res_loss = self.sess.run([z_optim, self.anomaly_score, self.res_loss], feed_dict = feed_dict)
       
@@ -522,11 +528,11 @@ class DCGAN(object):
         samples = self.sess.run(self.ano_G)
         errors = samples-test_data
 
-        print np.shape(samples)
+        print(np.shape(samples))
         samples = np.squeeze(samples)
         samples = (np.array(samples)+1)*127.5
-	if not self.grayscale:
-          errors = np.mean(np.squeeze(errors),axis=2)
+        if not self.grayscale:
+            errors = np.mean(np.squeeze(errors),axis=2)
         errors = (np.array(errors)+1)*127.5
 
         _path = './test_data/'

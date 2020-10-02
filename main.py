@@ -5,19 +5,23 @@ import numpy as np
 from model import DCGAN
 from utils import pp, visualize, show_all_variables
 
-import tensorflow as tf
+#it is necessary to use tensorflow.compat.v1 to ensure
+#the compatibility of the code, which is written for tensorflow 1.x
+#with the current version tensorflow 2.x
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 #arguments parsers
 flags = tf.app.flags
 
 #name, defulat value, description
 #below are for train and test
-flags.DEFINE_integer("epoch", 25, "Epoch to train [25]")
+flags.DEFINE_integer("epoch", 20, "Epoch to train [25]") #number of the training epochs
 flags.DEFINE_integer("test_epoch", 100, "Epoch for latent mapping in anomaly detection to train [100]")
 flags.DEFINE_float("learning_rate", 0.0002, "Learning rate of for adam [0.0002]")
 flags.DEFINE_float("beta1", 0.5, "Momentum term of adam [0.5]")
 flags.DEFINE_float("test_learning_rate", 0.001, "Learning rate for finding latent variable z [0.05]")
-flags.DEFINE_integer("train_size", np.inf, "The size of train images [np.inf]")
+flags.DEFINE_float("train_size", np.inf, "The size of train images [np.inf]")
 flags.DEFINE_boolean("train", False, "True for training, False for testing [False]")
 flags.DEFINE_boolean("anomaly_test", False, "True for anomaly test in test directory, not anomaly test [False]")
 flags.DEFINE_boolean("visualize", False, "True for visualizing, False for nothing [False]")
@@ -112,9 +116,9 @@ def main(_):
       dcgan.anomaly_detector()
       assert len(dcgan.test_data_names) > 0
       for idx in range(len(dcgan.test_data_names)):
-	test_input = np.expand_dims(dcgan.test_data[idx],axis=0)
-	test_name = dcgan.test_data_names[idx]
-        dcgan.train_anomaly_detector(FLAGS, test_input, test_name)
+          test_input = np.expand_dims(dcgan.test_data[idx],axis=0)
+          test_name = dcgan.test_data_names[idx]
+          dcgan.train_anomaly_detector(FLAGS, test_input, test_name)
 
     # Below is codes for visualization
     #OPTION = 1

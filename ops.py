@@ -1,6 +1,14 @@
+from __future__ import print_function #import the current print_function
+
 import math
 import numpy as np 
-import tensorflow as tf
+import tensorflow
+
+#it is necessary to use tensorflow.compat.v1 to ensure
+#the compatibility of the code, which is written for tensorflow 1.x
+#with the current version tensorflow 2.x
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from tensorflow.python.framework import ops
 
@@ -23,7 +31,16 @@ class batch_norm(object):
       self.epsilon  = epsilon
       self.momentum = momentum
       self.name = name
+      
+  def __call__(self, x, training=True): #New. for Tensorflow 2.x
+      return tf.layers.batch_normalization(x,
+                                           momentum=self.momentum,
+                                           epsilon=self.epsilon,
+                                           scale=True,
+                                           name=self.name)
 
+#Old: for Tensorflow V1.x
+"""
   def __call__(self, x, train=True):
     return tf.contrib.layers.batch_norm(x,
                       decay=self.momentum, 
@@ -32,6 +49,16 @@ class batch_norm(object):
                       scale=True,
                       is_training=train,
                       scope=self.name)
+"""
+#New: forTensorflow 2.x
+#momentum instead of decay
+#delete updates_collection
+#epsilon stays the same
+#scale stays the same
+#argument training=True instead of is_training 
+#delete scope
+
+  
 
 def conv_cond_concat(x, y):
   """Concatenate conditioning vector on feature map axis."""
