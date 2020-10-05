@@ -118,6 +118,8 @@ def download_lsun(dirpath):
 
 # Functions for Download MNIST Dataset
 def download_mnist(dirpath):
+  print("Current Working Directory:")
+  print(os.getcwd())  
   data_dir = os.path.join(dirpath, 'mnist')
   if os.path.exists(data_dir):
     print('Found MNIST - skip')
@@ -147,7 +149,8 @@ def prepare_data_dir(path = './data'):
 if __name__ == '__main__':
   args = parser.parse_args()
   prepare_data_dir()
-
+  
+  #Download to the Current Working Directory
   if any(name in args.datasets for name in ['CelebA', 'celebA', 'celebA']):
     download_celeb_a('./data')
   if 'lsun' in args.datasets:
